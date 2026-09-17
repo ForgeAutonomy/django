@@ -128,6 +128,17 @@ class MultiValueDict(dict):
             return default
         return val
 
+    def getfirst(self, key, default=None):
+        """
+        Return the first data value for the passed key. If key doesn't exist
+        or value is an empty list, return `default`.
+        """
+        try:
+            values = super().__getitem__(key)
+        except KeyError:
+            return default
+        return values[0] if values else default
+
     def _getlist(self, key, default=None, force_list=False):
         """
         Return a list of values for the key.
