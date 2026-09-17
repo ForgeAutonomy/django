@@ -6,7 +6,7 @@ from django.core.exceptions import SuspiciousFileOperation
 from django.test import SimpleTestCase
 from django.utils import text
 from django.utils.functional import lazystr
-from django.utils.text import format_lazy
+from django.utils.text import format_lazy, truncate_middle
 from django.utils.translation import gettext_lazy, override
 
 IS_WIDE_BUILD = len("\U0001f4a9") == 1
@@ -56,6 +56,49 @@ class TestUtilsText(SimpleTestCase):
         for test, expected in testdata:
             with self.subTest(value=test):
                 self.assertEqual(list(text.smart_split(test)), expected)
+
+    def test_truncate_middle_unchanged(self):
+        for value, length in [("", 3), ("abc", 4), ("abc", 3)]:
+            with self.subTest(value=value, length=length):
+                self.assertEqual(truncate_middle(value, length), value)
+
+    def test_truncate_middle_odd_length(self):
+        result = truncate_middle("abcdefghij", 7)
+        self.assertEqual(result, "abc…hij")
+        self.assertEqual(len(result), 7)
+
+        # An even-length ellipsis leaves an extra character to keep at the start.
+        result = truncate_middle("abcdefghij", 7, ellipsis="..")
+        self.assertEqual(result, "abc..ij")
+        self.assertEqual(len(result), 7)
+
+    def test_truncate_middle_even_length(self):
+        result = truncate_middle("abcdefghij", 8)
+        self.assertEqual(result, "abcd…hij")
+        self.assertEqual(len(result), 8)
+
+    def test_truncate_middle_custom_ellipsis(self):
+        result = truncate_middle("abcdefghij", 8, ellipsis="...")
+        self.assertEqual(result, "abc...ij")
+        self.assertEqual(len(result), 8)
+
+    def test_truncate_middle_minimum_length(self):
+        result = truncate_middle("abcdefghij", 3)
+        self.assertEqual(result, "a…j")
+        self.assertEqual(len(result), 3)
+
+        result = truncate_middle("abcdefghij", 5, ellipsis="...")
+        self.assertEqual(result, "a...j")
+        self.assertEqual(len(result), 5)
+
+    def test_truncate_middle_invalid_length(self):
+        for length in [-1, 0, 1, 2]:
+            with self.subTest(length=length), self.assertRaises(ValueError):
+                truncate_middle("abcdefghij", length)
+        for length in [-1, 0, 1, 2, 3, 4]:
+            with self.subTest(length=length, ellipsis="..."):
+                with self.assertRaises(ValueError):
+                    truncate_middle("abcdefghij", length, ellipsis="...")
 
     def test_truncate_chars(self):
         truncator = text.Truncator("The quick brown fox jumped over the lazy dog.")
