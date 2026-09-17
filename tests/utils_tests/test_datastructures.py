@@ -109,6 +109,33 @@ class MultiValueDictTests(SimpleTestCase):
         d.setlistdefault("newkey", ["Doe"])
         self.assertEqual(d.getlist("newkey"), ["Doe"])
 
+    def test_getfirst(self):
+        d = MultiValueDict({"name": ["Adrian", "Simon"], "position": ["Developer"]})
+        d.setlist("empty", [])
+
+        self.assertEqual(d.getfirst("name"), "Adrian")
+        self.assertEqual(d.getfirst("position"), "Developer")
+        self.assertIsNone(d.getfirst("lastname"))
+        self.assertEqual(d.getfirst("lastname", "nonexistent"), "nonexistent")
+        self.assertIsNone(d.getfirst("empty"))
+        self.assertEqual(d.getfirst("empty", "nonexistent"), "nonexistent")
+
+        self.assertEqual(d["name"], "Simon")
+        self.assertEqual(d.get("name"), "Simon")
+        self.assertEqual(d.getlist("name"), ["Adrian", "Simon"])
+        self.assertEqual(d["position"], "Developer")
+        self.assertEqual(d.get("position"), "Developer")
+        self.assertEqual(d.getlist("position"), ["Developer"])
+        with self.assertRaisesMessage(MultiValueDictKeyError, "'lastname'"):
+            d.__getitem__("lastname")
+        self.assertIsNone(d.get("lastname"))
+        self.assertEqual(d.get("lastname", "nonexistent"), "nonexistent")
+        self.assertEqual(d.getlist("lastname"), [])
+        self.assertEqual(d["empty"], [])
+        self.assertIsNone(d.get("empty"))
+        self.assertEqual(d.get("empty", "nonexistent"), "nonexistent")
+        self.assertEqual(d.getlist("empty"), [])
+
     def test_appendlist(self):
         d = MultiValueDict()
         d.appendlist("name", "Adrian")
