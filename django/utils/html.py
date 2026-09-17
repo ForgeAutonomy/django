@@ -234,6 +234,11 @@ def strip_tags(value):
     return value
 
 
+def word_count(value):
+    """Return the number of words in the given HTML with all tags stripped."""
+    return len(strip_tags(value).split())
+
+
 @keep_lazy_text
 def strip_spaces_between_tags(value):
     """Return the given HTML with spaces between tags removed."""
