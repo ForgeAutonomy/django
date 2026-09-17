@@ -70,6 +70,25 @@ def wrap(text, width):
     return "\n".join(result)
 
 
+def truncate_middle(text, length, ellipsis="…"):
+    """
+    Truncate the middle of a string to fit within the specified length.
+
+    Keep the start and end separated by `ellipsis`, giving the start the extra
+    character when the number of retained characters is odd. Return the text
+    unchanged if it already fits. Otherwise, raise ValueError if the length
+    cannot accommodate the ellipsis and at least one character at each end.
+    """
+    if len(text) <= length:
+        return text
+    if length < len(ellipsis) + 2:
+        raise ValueError("length must allow for the ellipsis and two characters.")
+    keep = length - len(ellipsis)
+    tail = keep // 2
+    head = keep - tail
+    return text[:head] + ellipsis + text[-tail:]
+
+
 def add_truncation_text(text, truncate=None):
     if truncate is None:
         truncate = pgettext(
