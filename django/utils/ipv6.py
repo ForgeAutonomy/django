@@ -62,3 +62,13 @@ def is_valid_ipv6_address(ip_addr):
     except (TypeError, ValueError):
         return False
     return True
+
+
+def is_loopback_ipv6_address(ip_str):
+    """
+    Return whether `ip_str` is a valid IPv6 loopback address.
+    """
+    try:
+        return _ipv6_address_from_str(ip_str).compressed == "::1"
+    except (TypeError, ValueError):
+        return False
