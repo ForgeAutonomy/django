@@ -1,8 +1,22 @@
 from django.test import SimpleTestCase
-from django.utils.functional import cached_property, classproperty, lazy
+from django.utils.functional import (
+    SimpleLazyObject,
+    cached_property,
+    classproperty,
+    is_lazy,
+    lazy,
+    lazystr,
+)
 
 
 class FunctionalTests(SimpleTestCase):
+    def test_is_lazy(self):
+        self.assertIs(is_lazy(lazy(lambda: "x", str)()), True)
+        self.assertIs(is_lazy(lazystr("x")), True)
+        self.assertIs(is_lazy("x"), False)
+        self.assertIs(is_lazy(None), False)
+        self.assertIs(is_lazy(SimpleLazyObject(lambda: "x")), False)
+
     def test_lazy(self):
         t = lazy(lambda: tuple(range(3)), list, tuple)
         for a, b in zip(t(), range(3)):
