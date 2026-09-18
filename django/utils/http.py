@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from email.utils import formatdate
 from urllib.parse import quote, unquote
 from urllib.parse import urlencode as original_urlencode
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
 from django.utils.datastructures import MultiValueDict
 from django.utils.regex_helper import _lazy_re_compile
@@ -332,6 +332,14 @@ def _url_has_allowed_host_and_scheme(url, allowed_hosts, require_https=False):
     return (not url_info.netloc or url_info.netloc in allowed_hosts) and (
         not scheme or scheme in valid_schemes
     )
+
+
+def strip_fragment(url):
+    """Return the URL without its fragment. Raise TypeError for non-string URLs."""
+    if not isinstance(url, str):
+        raise TypeError("url must be a str.")
+    scheme, netloc, path, query, fragment = urlsplit(url)
+    return urlunsplit((scheme, netloc, path, query, ""))
 
 
 def escape_leading_slashes(url):
