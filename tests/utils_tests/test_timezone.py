@@ -125,6 +125,20 @@ class TimezoneTests(SimpleTestCase):
         )
         self.assertTrue(timezone.is_naive(datetime.datetime(2011, 9, 1, 13, 20, 30)))
 
+    def test_is_utc(self):
+        self.assertIs(
+            timezone.is_utc(datetime.datetime(2026, 1, 1, tzinfo=datetime.UTC)), True
+        )
+        self.assertIs(
+            timezone.is_utc(
+                datetime.datetime(2026, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris"))
+            ),
+            False,
+        )
+        self.assertIs(timezone.is_utc(datetime.datetime(2026, 1, 1)), False)
+        with self.assertRaises(TypeError):
+            timezone.is_utc(datetime.date(2026, 1, 1))
+
     def test_make_aware(self):
         self.assertEqual(
             timezone.make_aware(datetime.datetime(2011, 9, 1, 13, 20, 30), EAT),
