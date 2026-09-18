@@ -23,6 +23,7 @@ __all__ = [
     "localtime",
     "localdate",
     "now",
+    "is_utc",
     "is_aware",
     "is_naive",
     "make_aware",
@@ -202,6 +203,18 @@ def now():
     Return an aware or naive datetime.datetime, depending on settings.USE_TZ.
     """
     return datetime.now(tz=UTC if settings.USE_TZ else None)
+
+
+def is_utc(value):
+    """
+    Determine if a given datetime.datetime has a zero UTC offset.
+
+    Return False for naive datetimes. Raise TypeError if value isn't a
+    datetime.datetime instance.
+    """
+    if not isinstance(value, datetime):
+        raise TypeError("is_utc() expects a datetime.datetime instance")
+    return value.utcoffset() == timedelta(0)
 
 
 # By design, these four functions don't perform any checks on their arguments.
