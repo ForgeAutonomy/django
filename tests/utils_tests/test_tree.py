@@ -46,6 +46,12 @@ class NodeTests(unittest.TestCase):
         self.assertIn(("a", 1), self.node1)
         self.assertNotIn(("a", 1), self.node2)
 
+    def test_leaves(self):
+        self.assertEqual(Node([1, Node([2, 3]), 4]).leaves(), [1, 2, 3, 4])
+        self.assertEqual(Node([Node([Node([5])])]).leaves(), [5])
+        self.assertEqual(Node().leaves(), [])
+        self.assertEqual(Node([Node(), Node()]).leaves(), [])
+
     def test_add(self):
         # start with the same children of node1 then add an item
         node3 = Node(self.node1_children)
