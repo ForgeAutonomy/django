@@ -6,6 +6,7 @@ from django.test import SimpleTestCase
 from django.utils.choices import (
     BaseChoiceIterator,
     CallableChoiceIterator,
+    choice_values,
     flatten_choices,
     normalize_choices,
 )
@@ -56,6 +57,18 @@ class ChoiceIteratorTests(SimpleTestCase):
                 with self.assertRaises(IndexError) as ctx:
                     choices[i]
                 self.assertTrue(str(ctx.exception).endswith("index out of range"))
+
+
+class ChoiceValuesTests(SimpleTestCase):
+    def test_non_empty(self):
+        self.assertEqual(choice_values([(1, "a"), (2, "b")]), [1, 2])
+
+    def test_nested_choices(self):
+        choices = [("g", [(1, "a"), (2, "b")]), (3, "c")]
+        self.assertEqual(choice_values(choices), [1, 2, 3])
+
+    def test_empty(self):
+        self.assertEqual(choice_values([]), [])
 
 
 class FlattenChoicesTests(SimpleTestCase):
