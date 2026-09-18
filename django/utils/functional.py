@@ -74,6 +74,14 @@ class Promise:
     pass
 
 
+def is_lazy(value):
+    """
+    Identify results of lazy() (any Promise subclass), excluding LazyObject and
+    SimpleLazyObject wrappers.
+    """
+    return isinstance(value, Promise)
+
+
 def lazy(func, *resultclasses):
     """
     Turn any callable into a lazy evaluated callable. result classes or types
