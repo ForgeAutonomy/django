@@ -2,7 +2,7 @@ from django.template import Context, Template
 from django.test import SimpleTestCase
 from django.utils import html, translation
 from django.utils.functional import Promise, lazy, lazystr
-from django.utils.safestring import SafeData, SafeString, mark_safe
+from django.utils.safestring import SafeData, SafeString, is_safe, mark_safe
 from django.utils.translation import gettext_lazy
 
 
@@ -18,6 +18,20 @@ class SafeStringTest(SimpleTestCase):
         context = Context(context)
         tpl = Template(tpl)
         self.assertEqual(tpl.render(context), expected)
+
+    def test_is_safe(self):
+        self.assertIs(is_safe(mark_safe("x")), True)
+        self.assertIs(is_safe(SafeString("x")), True)
+        self.assertIs(is_safe("x"), False)
+        self.assertIs(is_safe(None), False)
+        self.assertIs(is_safe(1), False)
+
+    def test_is_safe_object_implementing_dunder_html(self):
+        class Obj:
+            def __html__(self):
+                return "x"
+
+        self.assertIs(is_safe(Obj()), False)
 
     def test_mark_safe(self):
         s = mark_safe("a&b")
