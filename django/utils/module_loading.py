@@ -85,6 +85,16 @@ def autodiscover_modules(*args, **kwargs):
                     raise
 
 
+def module_exists(dotted_name):
+    """See if a module with the given dotted name exists."""
+    if not isinstance(dotted_name, str) or not dotted_name:
+        raise ValueError("dotted_name must be a non-empty string.")
+    try:
+        return importlib_find(dotted_name) is not None
+    except ModuleNotFoundError:
+        return False
+
+
 def module_has_submodule(package, module_name):
     """See if 'module' is in 'package'."""
     try:
