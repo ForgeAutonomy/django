@@ -53,6 +53,11 @@ class SafeString(str, SafeData):
 SafeText = SafeString  # For backwards compatibility since Django 2.0.
 
 
+def is_safe(value):
+    """Return whether the value is an instance of SafeData."""
+    return isinstance(value, SafeData)
+
+
 def _safety_decorator(safety_marker, func):
     @wraps(func)
     def wrapper(*args, **kwargs):
