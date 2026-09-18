@@ -5,6 +5,7 @@ from django.test import SimpleTestCase
 from django.utils.crypto import (
     InvalidAlgorithm,
     constant_time_compare,
+    get_random_digits,
     pbkdf2,
     salted_hmac,
 )
@@ -12,6 +13,20 @@ from django.utils.deprecation import RemovedInDjango2028Warning
 
 
 class TestUtilsCryptoMisc(SimpleTestCase):
+    def test_get_random_digits(self):
+        for length in (0, 1, 12):
+            with self.subTest(length=length):
+                result = get_random_digits(length)
+                self.assertIsInstance(result, str)
+                self.assertEqual(len(result), length)
+                self.assertTrue(all(char in "0123456789" for char in result))
+                if length == 0:
+                    self.assertEqual(result, "")
+
+    def test_get_random_digits_negative_length(self):
+        with self.assertRaises(ValueError):
+            get_random_digits(-1)
+
     def test_constant_time_compare(self):
         # It's hard to test for constant time, just test the result.
         self.assertTrue(constant_time_compare(b"spam", b"spam"))
