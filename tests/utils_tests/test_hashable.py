@@ -1,8 +1,21 @@
 from django.test import SimpleTestCase
-from django.utils.hashable import make_hashable
+from django.utils.hashable import is_hashable, make_hashable
 
 
 class TestHashable(SimpleTestCase):
+    def test_is_hashable(self):
+        for value in (1, "a", (1, 2), frozenset(), None):
+            with self.subTest(value=value):
+                self.assertIs(is_hashable(value), True)
+
+    def test_is_not_hashable(self):
+        for value in ([], {}, set(), ([1],)):
+            with self.subTest(value=value):
+                self.assertIs(is_hashable(value), False)
+
+    def test_make_hashable_is_hashable(self):
+        self.assertIs(is_hashable(make_hashable([1, {2: 3}])), True)
+
     def test_equal(self):
         tests = (
             ([], ()),
