@@ -10,6 +10,7 @@ from django.test.utils import extend_sys_path
 from django.utils.module_loading import (
     autodiscover_modules,
     import_string,
+    module_exists,
     module_has_submodule,
     qualname,
 )
@@ -128,6 +129,31 @@ class EggLoader(unittest.TestCase):
             self.assertFalse(module_has_submodule(egg_module, "no_such_module"))
             with self.assertRaises(ImportError):
                 import_module("egg_module.sub1.sub2.no_such_module")
+
+
+class ModuleExistsTests(SimpleTestCase):
+    def test_existing_package(self):
+        self.assertIs(module_exists("django.utils"), True)
+
+    def test_existing_module(self):
+        self.assertIs(module_exists("django.utils.module_loading"), True)
+
+    def test_missing_module(self):
+        self.assertIs(module_exists("django.utils.no_such_module"), False)
+
+    def test_missing_top_level_package(self):
+        self.assertIs(module_exists("no_such_top_level_package"), False)
+
+    def test_missing_parent_package(self):
+        self.assertIs(module_exists("no_such_top_level_package.child"), False)
+
+    def test_empty_name(self):
+        with self.assertRaises(ValueError):
+            module_exists("")
+
+    def test_none_name(self):
+        with self.assertRaises(ValueError):
+            module_exists(None)
 
 
 class ModuleImportTests(SimpleTestCase):
