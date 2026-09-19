@@ -77,3 +77,16 @@ MONTHS_ALT = {  # required for long date representation by some locales
     11: pgettext_lazy("alt. month", "November"),
     12: pgettext_lazy("alt. month", "December"),
 }
+
+
+def is_weekend(weekday):
+    """
+    Return whether weekday is Saturday or Sunday.
+
+    Use datetime.date.weekday() numbering: 0=Monday through 6=Sunday.
+    """
+    if isinstance(weekday, bool) or not isinstance(weekday, int):
+        raise TypeError("weekday must be an integer.")
+    if not 0 <= weekday <= 6:
+        raise ValueError("weekday must be between 0 and 6.")
+    return weekday in (5, 6)
