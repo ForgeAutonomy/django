@@ -7,6 +7,14 @@ from xml.sax.saxutils import XMLGenerator
 from django.utils.regex_helper import _lazy_re_compile
 
 _xml_control_chars_re = _lazy_re_compile(r"[\x00-\x08\x0B-\x0C\x0E-\x1F]")
+_illegal_xml_chars_re = _lazy_re_compile(r"[\x00-\x08\x0B-\x0C\x0E-\x1F\uFFFE\uFFFF]")
+
+
+def strip_illegal_xml_chars(text):
+    """Remove XML-illegal control characters and U+FFFE/U+FFFF from a string."""
+    if not isinstance(text, str):
+        raise TypeError("text must be a str")
+    return _illegal_xml_chars_re.sub("", text)
 
 
 class UnserializableContentError(ValueError):
