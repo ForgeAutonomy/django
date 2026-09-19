@@ -8,6 +8,7 @@ import zipfile
 from django.core.exceptions import SuspiciousOperation
 from django.test import SimpleTestCase
 from django.utils import archive
+from django.utils.archive import is_archive_name
 
 try:
     import bz2  # NOQA
@@ -22,6 +23,30 @@ try:
     HAS_LZMA = True
 except ImportError:
     HAS_LZMA = False
+
+
+class IsArchiveNameTests(unittest.TestCase):
+    def test_archive_names(self):
+        for name in (
+            "x.tar",
+            "x.tar.gz",
+            "x.tgz",
+            "x.tar.bz2",
+            "x.tar.xz",
+            "x.zip",
+            "/tmp/dir/x.zip",
+        ):
+            with self.subTest(name=name):
+                self.assertIs(is_archive_name(name), True)
+
+    def test_non_archive_names(self):
+        for name in ("x.txt", "x", "", "x.rar"):
+            with self.subTest(name=name):
+                self.assertIs(is_archive_name(name), False)
+
+    def test_none(self):
+        with self.assertRaises(TypeError):
+            is_archive_name(None)
 
 
 class TestArchive(unittest.TestCase):
