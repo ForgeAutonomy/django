@@ -30,6 +30,18 @@ import zipfile
 
 from django.core.exceptions import SuspiciousOperation
 
+__all__ = [
+    "Archive",
+    "ArchiveException",
+    "BaseArchive",
+    "TarArchive",
+    "UnrecognizedArchiveFormat",
+    "ZipArchive",
+    "extension_map",
+    "extract",
+    "is_archive_name",
+]
+
 
 class ArchiveException(Exception):
     """
@@ -50,6 +62,19 @@ def extract(path, to_path):
     """
     with Archive(path) as archive:
         archive.extract(to_path)
+
+
+def is_archive_name(name):
+    """
+    Return True if the name has a recognized archive format extension.
+    """
+    if not isinstance(name, str):
+        raise TypeError("name must be a str.")
+    try:
+        Archive._archive_cls(name)
+    except UnrecognizedArchiveFormat:
+        return False
+    return True
 
 
 class Archive:
