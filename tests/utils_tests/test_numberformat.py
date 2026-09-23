@@ -26,6 +26,11 @@ class TestNumberFormat(SimpleTestCase):
             )
 
     def test_format_string(self):
+        self.assertEqual(nformat("-0.0", "."), "0.0")
+        self.assertEqual(nformat("-0.001", ".", decimal_pos=2), "0.00")
+        self.assertEqual(nformat("-0.5", ".", decimal_pos=0), "0")
+        self.assertEqual(nformat("-0.05", ".", decimal_pos=2), "-0.05")
+        self.assertEqual(nformat("-1.5", ".", decimal_pos=0), "-1")
         self.assertEqual(nformat("1234", "."), "1234")
         self.assertEqual(nformat("1234.2", "."), "1234.2")
         self.assertEqual(nformat("1234", ".", decimal_pos=2), "1234.00")
@@ -69,6 +74,11 @@ class TestNumberFormat(SimpleTestCase):
 
     def test_float_numbers(self):
         tests = [
+            (-0.0, None, "0.0"),
+            (-0.001, 2, "0.00"),
+            (-0.5, 0, "0"),
+            (-0.05, 2, "-0.05"),
+            (-1.5, 0, "-1"),
             (9e-10, 10, "0.0000000009"),
             (9e-19, 2, "0.00"),
             (0.00000000000099, 0, "0"),
@@ -101,6 +111,11 @@ class TestNumberFormat(SimpleTestCase):
         )
 
     def test_decimal_numbers(self):
+        self.assertEqual(nformat(Decimal("-0.0"), "."), "0.0")
+        self.assertEqual(nformat(Decimal("-0.001"), ".", decimal_pos=2), "0.00")
+        self.assertEqual(nformat(Decimal("-0.5"), ".", decimal_pos=0), "0")
+        self.assertEqual(nformat(Decimal("-0.05"), ".", decimal_pos=2), "-0.05")
+        self.assertEqual(nformat(Decimal("-1.5"), ".", decimal_pos=0), "-1")
         self.assertEqual(nformat(Decimal("1234"), "."), "1234")
         self.assertEqual(nformat(Decimal("1234.2"), "."), "1234.2")
         self.assertEqual(nformat(Decimal("1234"), ".", decimal_pos=2), "1234.00")
