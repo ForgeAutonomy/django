@@ -38,7 +38,7 @@ re_camel_case = _lazy_re_compile(r"(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))")
 
 
 @keep_lazy_text
-def wrap(text, width):
+def wrap(text, width, *, break_long_words=False):
     """
     A word-wrap function that preserves existing line breaks. Expects that
     existing line breaks are posix newlines.
@@ -46,13 +46,13 @@ def wrap(text, width):
     Preserve all white space except added line breaks consume the space on
     which they break the line.
 
-    Don't wrap long words, thus the output text may have lines longer than
+    By default, don't wrap long words, so the output text may have lines longer than
     ``width``.
     """
 
     wrapper = textwrap.TextWrapper(
         width=width,
-        break_long_words=False,
+        break_long_words=break_long_words,
         break_on_hyphens=False,
         replace_whitespace=False,
     )
