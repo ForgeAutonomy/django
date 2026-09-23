@@ -160,6 +160,8 @@ def base36_to_int(s):
     # is sufficient to base36-encode any 64-bit integer)
     if len(s) > 13:
         raise ValueError("Base36 input too large")
+    if not re.fullmatch("[0-9a-zA-Z]+", s):
+        raise ValueError("Invalid base36 input")
     return int(s, 36)
 
 
