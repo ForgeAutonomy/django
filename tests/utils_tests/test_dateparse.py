@@ -18,6 +18,7 @@ class DateParseTests(unittest.TestCase):
         self.assertEqual(parse_date("20120423"), date(2012, 4, 23))
         # Invalid inputs
         self.assertIsNone(parse_date("2012423"))
+        self.assertIsNone(parse_date("2012-04-23\n"))
         with self.assertRaises(ValueError):
             parse_date("2012-04-56")
 
@@ -38,6 +39,7 @@ class DateParseTests(unittest.TestCase):
         self.assertIsNone(parse_time("00:05:23+25:00"))
         self.assertIsNone(parse_time("4:18:101"))
         self.assertIsNone(parse_time("91500"))
+        self.assertIsNone(parse_time("09:15:00\n"))
         with self.assertRaises(ValueError):
             parse_time("09:15:90")
 
@@ -89,6 +91,7 @@ class DateParseTests(unittest.TestCase):
 
         # Invalid inputs
         self.assertIsNone(parse_datetime("20120423091500"))
+        self.assertIsNone(parse_datetime("2012-04-23T09:15:00\n"))
         with self.assertRaises(ValueError):
             parse_datetime("2012-04-56T09:15:90")
 
@@ -134,6 +137,7 @@ class DurationParseTests(unittest.TestCase):
 
     def test_seconds(self):
         self.assertEqual(parse_duration("30"), timedelta(seconds=30))
+        self.assertIsNone(parse_duration("30\n"))
 
     def test_minutes_seconds(self):
         self.assertEqual(parse_duration("15:30"), timedelta(minutes=15, seconds=30))
@@ -200,6 +204,7 @@ class DurationParseTests(unittest.TestCase):
             ("-P0.5W", timedelta(weeks=-0.5)),
             ("P1W1D", timedelta(weeks=1, days=1)),
             ("P4D", timedelta(days=4)),
+            ("P4D\n", None),
             ("-P1D", timedelta(days=-1)),
             ("P0.5D", timedelta(hours=12)),
             ("P0,5D", timedelta(hours=12)),
