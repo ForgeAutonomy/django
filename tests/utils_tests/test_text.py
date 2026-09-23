@@ -436,6 +436,14 @@ class TestUtilsText(SimpleTestCase):
                 text.unescape_string_literal(item)
 
     def test_get_valid_filename(self):
+        self.assertEqual(text.get_valid_filename("a\tb c\nd"), "a_b_c_d")
+        self.assertEqual(text.get_valid_filename("a\u00a0b"), "a_b")
+        self.assertEqual(text.get_valid_filename("a b"), "a_b")
+        self.assertEqual(text.get_valid_filename("a  b"), "a__b")
+        self.assertEqual(
+            text.get_valid_filename("john's portrait in 2004.jpg"),
+            "johns_portrait_in_2004.jpg",
+        )
         filename = "^&'@{}[],$=!-#()%+~_123.txt"
         self.assertEqual(text.get_valid_filename(filename), "-_123.txt")
         self.assertEqual(text.get_valid_filename(lazystr(filename)), "-_123.txt")
