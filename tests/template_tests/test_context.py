@@ -27,6 +27,36 @@ class ContextTests(SimpleTestCase):
         self.assertEqual(c.get("foo", 42), 42)
         self.assertEqual(c, mock.ANY)
 
+    def test_context_accessors(self):
+        c = Context({"a": 1})
+        self.assertCountEqual(c.keys(), ["True", "False", "None", "a"])
+        self.assertCountEqual(c.values(), [True, False, None, 1])
+        self.assertCountEqual(
+            c.items(), [("True", True), ("False", False), ("None", None), ("a", 1)]
+        )
+
+    def test_context_accessors_with_push(self):
+        c = Context({"a": 1})
+        c.push({"b": 2})
+        self.assertCountEqual(c.keys(), ["True", "False", "None", "a", "b"])
+        self.assertCountEqual(c.values(), [True, False, None, 1, 2])
+        self.assertCountEqual(
+            c.items(),
+            [("True", True), ("False", False), ("None", None), ("a", 1), ("b", 2)],
+        )
+
+    def test_context_accessors_with_shadowed_key(self):
+        c = Context({"a": 1})
+        c.push({"a": 2})
+        c.push({"a": 3})
+        self.assertEqual(c.get("a"), 3)
+        self.assertCountEqual(c.keys(), ["True", "False", "None", "a"])
+        self.assertCountEqual(c.values(), [True, False, None, 3])
+        self.assertCountEqual(
+            c.items(),
+            [("True", True), ("False", False), ("None", None), ("a", c.get("a"))],
+        )
+
     def test_push_context_manager(self):
         c = Context({"a": 1})
         with c.push():
