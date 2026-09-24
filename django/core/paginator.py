@@ -329,6 +329,12 @@ class Page(collections.abc.Sequence):
     def has_previous(self):
         return self.number > 1
 
+    def is_first_page(self):
+        return not self.has_previous()
+
+    def is_last_page(self):
+        return not self.has_next()
+
     def has_other_pages(self):
         return self.has_previous() or self.has_next()
 
@@ -425,6 +431,12 @@ class AsyncPage:
 
     async def ahas_previous(self):
         return self.number > 1
+
+    async def ais_first_page(self):
+        return not await self.ahas_previous()
+
+    async def ais_last_page(self):
+        return not await self.ahas_next()
 
     async def ahas_other_pages(self):
         has_previous = await self.ahas_previous()
