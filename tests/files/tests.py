@@ -55,7 +55,9 @@ class ValidateFileNameTests(unittest.TestCase):
             for allow_relative_path in (False, True):
                 with self.subTest(name=name, allow_relative_path=allow_relative_path):
                     with self.assertRaises(SuspiciousFileOperation) as cm:
-                        validate_file_name(name, allow_relative_path=allow_relative_path)
+                        validate_file_name(
+                            name, allow_relative_path=allow_relative_path
+                        )
                     self.assertEqual(
                         str(cm.exception), "File name %r contains a null byte." % name
                     )
@@ -64,13 +66,16 @@ class ValidateFileNameTests(unittest.TestCase):
         for value in ("a\x00b", "\x00ab", "ab\x00"):
             for name in (Path(value), os.fsencode(value)):
                 for allow_relative_path in (False, True):
-                    with self.subTest(name=name, allow_relative_path=allow_relative_path):
+                    with self.subTest(
+                        name=name, allow_relative_path=allow_relative_path
+                    ):
                         with self.assertRaises(SuspiciousFileOperation) as cm:
                             validate_file_name(
                                 name, allow_relative_path=allow_relative_path
                             )
                         self.assertEqual(
-                            str(cm.exception), "File name %r contains a null byte." % name
+                            str(cm.exception),
+                            "File name %r contains a null byte." % name,
                         )
 
 
