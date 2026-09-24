@@ -34,6 +34,11 @@ else:
 
 
 class ValidateFileNameTests(unittest.TestCase):
+    def test_pathlib_name(self):
+        for name in (Path("a.txt"), Path("a/b.txt")):
+            with self.subTest(name=name):
+                self.assertIs(validate_file_name(name, allow_relative_path=True), name)
+
     def test_null_byte(self):
         names = (
             "a\x00b",
@@ -54,6 +59,19 @@ class ValidateFileNameTests(unittest.TestCase):
                     self.assertEqual(
                         str(cm.exception), "File name %r contains a null byte." % name
                     )
+
+    def test_null_byte_pathlike_and_bytes(self):
+        for value in ("a\x00b", "\x00ab", "ab\x00"):
+            for name in (Path(value), os.fsencode(value)):
+                for allow_relative_path in (False, True):
+                    with self.subTest(name=name, allow_relative_path=allow_relative_path):
+                        with self.assertRaises(SuspiciousFileOperation) as cm:
+                            validate_file_name(
+                                name, allow_relative_path=allow_relative_path
+                            )
+                        self.assertEqual(
+                            str(cm.exception), "File name %r contains a null byte." % name
+                        )
 
 
 class FileTests(unittest.TestCase):

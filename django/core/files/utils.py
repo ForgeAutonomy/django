@@ -5,7 +5,7 @@ from django.core.exceptions import SuspiciousFileOperation
 
 
 def validate_file_name(name, allow_relative_path=False):
-    if "\x00" in name:
+    if "\x00" in os.fsdecode(name):
         raise SuspiciousFileOperation("File name %r contains a null byte." % name)
 
     # Remove potentially dangerous names
