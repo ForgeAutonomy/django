@@ -8,6 +8,7 @@ from io import BytesIO, StringIO, TextIOWrapper
 from pathlib import Path
 from unittest import mock
 
+from django.core.exceptions import SuspiciousFileOperation
 from django.core.files import File, locks
 from django.core.files.base import ContentFile
 from django.core.files.move import file_move_safe
@@ -18,6 +19,7 @@ from django.core.files.uploadedfile import (
     TemporaryUploadedFile,
     UploadedFile,
 )
+from django.core.files.utils import validate_file_name
 from django.test import override_settings
 
 try:
@@ -29,6 +31,29 @@ except ImportError:
     HAS_WEBP = False
 else:
     from django.core.files import images
+
+
+class ValidateFileNameTests(unittest.TestCase):
+    def test_null_byte(self):
+        names = (
+            "a\x00b",
+            "\x00ab",
+            "ab\x00",
+            "a/\x00b",
+            "../a\x00b",
+            "/a\x00b",
+            "a\x00b/",
+            "a\x00b/.",
+            "a\x00b/..",
+        )
+        for name in names:
+            for allow_relative_path in (False, True):
+                with self.subTest(name=name, allow_relative_path=allow_relative_path):
+                    with self.assertRaises(SuspiciousFileOperation) as cm:
+                        validate_file_name(name, allow_relative_path=allow_relative_path)
+                    self.assertEqual(
+                        str(cm.exception), "File name %r contains a null byte." % name
+                    )
 
 
 class FileTests(unittest.TestCase):
