@@ -78,12 +78,12 @@ def b62_encode(s):
 
 
 def b62_decode(s):
-    if s == "0":
-        return 0
     sign = 1
-    if s[0] == "-":
+    if s.startswith("-"):
         s = s[1:]
         sign = -1
+    if not s or any(digit not in BASE62_ALPHABET for digit in s):
+        raise ValueError("Invalid base62 encoded string.")
     decoded = 0
     for digit in s:
         decoded = decoded * 62 + BASE62_ALPHABET.index(digit)
