@@ -35,4 +35,13 @@ class FunctionTests(SimpleTestCase):
         self.assertEqual(first(""), "")
 
     def test_string(self):
-        self.assertEqual(first("test"), "t")
+        self.assertEqual(first("ab"), "a")
+
+    def test_none(self):
+        self.assertEqual(first(None), "")
+
+    def test_int(self):
+        self.assertEqual(first(5), "")
+
+    def test_dict(self):
+        self.assertEqual(first({"a": 1}), "")
