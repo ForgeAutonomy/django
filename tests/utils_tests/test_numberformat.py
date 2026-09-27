@@ -3,9 +3,35 @@ from sys import float_info
 
 from django.test import SimpleTestCase
 from django.utils.numberformat import format as nformat
+from django.utils.numberformat import format_percent
 
 
 class TestNumberFormat(SimpleTestCase):
+    def test_format_percent_float(self):
+        self.assertEqual(format_percent(0.256, ".", decimal_pos=1), "25.6%")
+
+    def test_format_percent_decimal(self):
+        self.assertEqual(format_percent(Decimal("0.5"), "."), "50%")
+
+    def test_format_percent_integer(self):
+        self.assertEqual(format_percent(1, ",", decimal_pos=2), "100,00%")
+
+    def test_format_percent_string(self):
+        self.assertEqual(format_percent("0.25", "."), "25%")
+
+    def test_format_percent_force_grouping(self):
+        self.assertEqual(
+            format_percent(
+                12345.678,
+                ".",
+                decimal_pos=2,
+                grouping=3,
+                thousand_sep=",",
+                force_grouping=True,
+            ),
+            "1,234,567.80%",
+        )
+
     def test_format_number(self):
         self.assertEqual(nformat(1234, "."), "1234")
         self.assertEqual(nformat(1234.2, "."), "1234.2")

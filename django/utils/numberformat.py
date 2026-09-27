@@ -106,3 +106,33 @@ def format(
             cnt += 1
         int_part = "".join(int_part_gd)[::-1]
     return sign + int_part + dec_part
+
+
+def format_percent(
+    number,
+    decimal_sep,
+    decimal_pos=None,
+    grouping=0,
+    thousand_sep="",
+    force_grouping=False,
+    use_l10n=None,
+):
+    """
+    Get a number (as a number or string), and return it as a percentage string,
+    using formats defined as arguments to format().
+
+    Multiply the number by 100 and append a percent sign to the formatted value.
+    """
+    if isinstance(number, str):
+        number = Decimal(number)
+    # Shift Decimal values by two places without adding trailing decimal zeros.
+    number *= Decimal("1E+2") if isinstance(number, Decimal) else 100
+    return format(
+        number,
+        decimal_sep,
+        decimal_pos,
+        grouping,
+        thousand_sep,
+        force_grouping,
+        use_l10n,
+    ) + "%"
