@@ -86,6 +86,16 @@ class Node:
             )
         )
 
+    def leaves(self):
+        """Return the leaves in depth-first, left-to-right order."""
+        leaves = []
+        for child in self.children:
+            if isinstance(child, Node):
+                leaves.extend(child.leaves())
+            else:
+                leaves.append(child)
+        return leaves
+
     def add(self, data, conn_type):
         """
         Combine this tree and the data represented by data using the
