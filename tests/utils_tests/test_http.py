@@ -121,10 +121,8 @@ class Base36IntTests(SimpleTestCase):
                 int_to_base36(n)
 
     def test_invalid_literal(self):
-        for n in ["#", " "]:
-            with self.assertRaisesMessage(
-                ValueError, "invalid literal for int() with base 36: '%s'" % n
-            ):
+        for n in ["#", " ", "-z", " 12 ", "1_0", "+1"]:
+            with self.assertRaisesMessage(ValueError, "Invalid base36 input"):
                 base36_to_int(n)
 
     def test_input_too_large(self):
