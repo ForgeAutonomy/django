@@ -78,6 +78,13 @@ def get_random_string(length, allowed_chars=RANDOM_STRING_CHARS):
     return "".join(secrets.choice(allowed_chars) for i in range(length))
 
 
+def get_random_digits(length):
+    """Return a securely generated random string of digits."""
+    if length < 0:
+        raise ValueError("length must be non-negative")
+    return get_random_string(length, allowed_chars="0123456789")
+
+
 def constant_time_compare(val1, val2):
     """Return True if the two strings are equal, False otherwise."""
     return secrets.compare_digest(force_bytes(val1), force_bytes(val2))
