@@ -3,6 +3,7 @@ import unittest
 
 from django.test import SimpleTestCase
 from django.utils import regex_helper
+from django.utils.regex_helper import has_named_group
 
 
 class NormalizeTests(unittest.TestCase):
@@ -46,6 +47,25 @@ class NormalizeTests(unittest.TestCase):
         expected = [("%(first_group_name)s-%(first_group_name)s", ["first_group_name"])]
         result = regex_helper.normalize(pattern)
         self.assertEqual(result, expected)
+
+
+class HasNamedGroupTests(unittest.TestCase):
+    def test_named_group(self):
+        self.assertIs(has_named_group(r"(?P<pk>\d+)"), True)
+
+    def test_positional_group(self):
+        self.assertIs(has_named_group(r"(\d+)"), False)
+
+    def test_no_group(self):
+        self.assertIs(has_named_group(r"^$"), False)
+
+    def test_invalid_pattern(self):
+        with self.assertRaises(re.error):
+            has_named_group(r"(")
+
+    def test_invalid_type(self):
+        with self.assertRaises(TypeError):
+            has_named_group(1)
 
 
 class LazyReCompileTests(SimpleTestCase):

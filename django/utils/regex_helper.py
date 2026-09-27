@@ -340,6 +340,13 @@ def flatten_result(source):
     return result, result_args
 
 
+def has_named_group(pattern):
+    """Return True if the pattern contains a named capturing group."""
+    if not isinstance(pattern, str):
+        raise TypeError("pattern must be a str")
+    return bool(re.compile(pattern).groupindex)
+
+
 def _lazy_re_compile(regex, flags=0):
     """Lazily compile a regex with flags."""
 
