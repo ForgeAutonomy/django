@@ -97,6 +97,15 @@ class BaseContext:
     def __contains__(self, key):
         return any(key in d for d in self.dicts)
 
+    def keys(self):
+        return self.flatten().keys()
+
+    def values(self):
+        return self.flatten().values()
+
+    def items(self):
+        return self.flatten().items()
+
     def get(self, key, otherwise=None):
         for d in reversed(self.dicts):
             if key in d:
