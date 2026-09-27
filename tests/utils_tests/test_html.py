@@ -22,6 +22,7 @@ from django.utils.html import (
     strip_spaces_between_tags,
     strip_tags,
     urlize,
+    word_count,
 )
 from django.utils.safestring import mark_safe
 
@@ -115,6 +116,19 @@ class TestUtilsHtml(SimpleTestCase):
             with self.subTest(value=value, output=output):
                 self.check_output(linebreaks, value, output)
                 self.check_output(linebreaks, lazystr(value), output)
+
+    def test_word_count(self):
+        items = (
+            ("", 0),
+            ("   \n\t ", 0),
+            ("one two three four", 4),
+            ("<p>Hello <b>big</b> world</p>", 3),
+            ("<div><p>a <span><em>b</em></span> c</p></div>", 3),
+            ("<p></p><br><div></div>", 0),
+        )
+        for value, output in items:
+            with self.subTest(value=value, output=output):
+                self.check_output(word_count, value, output)
 
     def test_strip_tags(self):
         # Python fixed a quadratic-time issue in HTMLParser in 3.13.6, 3.12.12.
