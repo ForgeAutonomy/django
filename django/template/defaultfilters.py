@@ -604,7 +604,7 @@ def first(value):
     """Return the first item in a list."""
     try:
         return value[0]
-    except IndexError:
+    except (IndexError, TypeError, KeyError):
         return ""
 
 
@@ -626,7 +626,7 @@ def last(value):
     """Return the last item in a list."""
     try:
         return value[-1]
-    except IndexError:
+    except (IndexError, TypeError, KeyError):
         return ""
 
 
