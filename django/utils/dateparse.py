@@ -10,18 +10,18 @@ import datetime
 from django.utils.regex_helper import _lazy_re_compile
 from django.utils.timezone import get_fixed_timezone
 
-date_re = _lazy_re_compile(r"(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})$")
+date_re = _lazy_re_compile(r"(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})\Z")
 
 time_re = _lazy_re_compile(
     r"(?P<hour>\d{1,2}):(?P<minute>\d{1,2})"
-    r"(?::(?P<second>\d{1,2})(?:[.,](?P<microsecond>\d{1,6})\d{0,6})?)?$"
+    r"(?::(?P<second>\d{1,2})(?:[.,](?P<microsecond>\d{1,6})\d{0,6})?)?\Z"
 )
 
 datetime_re = _lazy_re_compile(
     r"(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})"
     r"[T ](?P<hour>\d{1,2}):(?P<minute>\d{1,2})"
     r"(?::(?P<second>\d{1,2})(?:[.,](?P<microsecond>\d{1,6})\d{0,6})?)?"
-    r"\s*(?P<tzinfo>Z|[+-]\d{2}(?::?\d{2})?)?$"
+    r"(?:\s*(?P<tzinfo>Z|[+-]\d{2}(?::?\d{2})?))?\Z"
 )
 
 standard_duration_re = _lazy_re_compile(
@@ -32,7 +32,7 @@ standard_duration_re = _lazy_re_compile(
     r"(?:(?P<minutes>\d+):)?"
     r"(?P<seconds>\d+)"
     r"(?:[.,](?P<microseconds>\d{1,6})\d{0,6})?"
-    r"$"
+    r"\Z"
 )
 
 # Support the sections of ISO 8601 date representation that are accepted by
@@ -47,7 +47,7 @@ iso8601_duration_re = _lazy_re_compile(
     r"(?:(?P<minutes>\d+([.,]\d+)?)M)?"
     r"(?:(?P<seconds>\d+([.,]\d+)?)S)?"
     r")?"
-    r"$"
+    r"\Z"
 )
 
 # Support PostgreSQL's day-time interval format, e.g. "3 days 04:05:06". The
@@ -61,7 +61,7 @@ postgres_interval_re = _lazy_re_compile(
     r"(?P<minutes>\d\d):"
     r"(?P<seconds>\d\d)"
     r"(?:\.(?P<microseconds>\d{1,6}))?"
-    r")?$"
+    r")?\Z"
 )
 
 
