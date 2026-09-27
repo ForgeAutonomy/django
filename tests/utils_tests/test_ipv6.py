@@ -8,11 +8,28 @@ from django.test import SimpleTestCase
 from django.utils.ipv6 import (
     MAX_IPV6_ADDRESS_LENGTH,
     clean_ipv6_address,
+    is_loopback_ipv6_address,
     is_valid_ipv6_address,
 )
 
 
 class TestUtilsIPv6(SimpleTestCase):
+    def test_loopback_address(self):
+        cases = [
+            "::1",
+            "0:0:0:0:0:0:0:1",
+            "0000:0000:0000:0000:0000:0000:0000:0001",
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertIs(is_loopback_ipv6_address(case), True)
+
+    def test_non_loopback_address(self):
+        cases = ["::2", "fe80::1", "127.0.0.1", "invalid", "1:2:3:4:5:6:7:8:9"]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertIs(is_loopback_ipv6_address(case), False)
+
     def test_validates_correct_plain_address(self):
         self.assertTrue(is_valid_ipv6_address("fe80::223:6cff:fe8a:2e8a"))
         self.assertTrue(is_valid_ipv6_address("2a02::223:6cff:fe8a:2e8a"))
