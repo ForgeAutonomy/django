@@ -1,10 +1,12 @@
 import datetime
 import unittest
 
+from django.test import SimpleTestCase
 from django.utils.dateparse import parse_duration
 from django.utils.duration import (
     duration_iso_string,
     duration_microseconds,
+    duration_seconds,
     duration_string,
 )
 
@@ -98,3 +100,29 @@ class TestDurationMicroseconds(unittest.TestCase):
                 self.assertEqual(
                     datetime.timedelta(microseconds=duration_microseconds(delta)), delta
                 )
+
+
+class TestDurationSeconds(SimpleTestCase):
+    def test_zero(self):
+        duration = datetime.timedelta(0)
+        self.assertEqual(duration_seconds(duration), 0)
+
+    def test_days(self):
+        duration = datetime.timedelta(days=1, seconds=1, microseconds=999999)
+        self.assertEqual(duration_seconds(duration), 86401)
+
+    def test_microseconds(self):
+        duration = datetime.timedelta(microseconds=999999)
+        self.assertEqual(duration_seconds(duration), 0)
+
+    def test_positive_fraction(self):
+        duration = datetime.timedelta(seconds=1, microseconds=500000)
+        self.assertEqual(duration_seconds(duration), 1)
+
+    def test_negative_microseconds(self):
+        duration = datetime.timedelta(microseconds=-1)
+        self.assertEqual(duration_seconds(duration), 0)
+
+    def test_negative(self):
+        duration = datetime.timedelta(seconds=-1, microseconds=-500000)
+        self.assertEqual(duration_seconds(duration), -1)
