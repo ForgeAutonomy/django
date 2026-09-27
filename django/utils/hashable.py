@@ -24,3 +24,12 @@ def make_hashable(value):
         # Non-hashable, non-iterable.
         raise
     return value
+
+
+def is_hashable(value):
+    """Return whether value is hashable."""
+    try:
+        hash(value)
+    except TypeError:
+        return False
+    return True
