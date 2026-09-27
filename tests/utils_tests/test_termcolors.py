@@ -8,6 +8,7 @@ from django.utils.termcolors import (
     PALETTES,
     colorize,
     parse_color_setting,
+    strip_colors,
 )
 
 
@@ -231,3 +232,22 @@ class TermColorTests(unittest.TestCase):
             colorize(text="Test", opts=("not_an_option",)),
             "\x1b[mTest\x1b[0m",
         )
+
+    def test_strip_colors_fg(self):
+        self.assertEqual(strip_colors(colorize("hello", fg="red")), "hello")
+
+    def test_strip_colors_opts(self):
+        self.assertEqual(strip_colors(colorize("hello", opts=("bold",))), "hello")
+
+    def test_strip_colors_plain_text(self):
+        self.assertEqual(strip_colors("hello"), "hello")
+
+    def test_strip_colors_empty_string(self):
+        self.assertEqual(strip_colors(""), "")
+
+    def test_strip_colors_preserves_osc(self):
+        self.assertEqual(strip_colors("\x1b]0;title\x07"), "\x1b]0;title\x07")
+
+    def test_strip_colors_bytes(self):
+        with self.assertRaises(TypeError):
+            strip_colors(b"hello")

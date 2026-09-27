@@ -2,6 +2,10 @@
 termcolors.py
 """
 
+import re
+
+_sgr_re = re.compile(r"\x1b\[[0-9;]*m")
+
 color_names = ("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white")
 foreground = {color_names[x]: "3%s" % x for x in range(8)}
 background = {color_names[x]: "4%s" % x for x in range(8)}
@@ -59,6 +63,17 @@ def colorize(text="", opts=(), **kwargs):
     if "noreset" not in opts:
         text = "%s\x1b[%sm" % (text or "", RESET)
     return "%s%s" % (("\x1b[%sm" % ";".join(code_list)), text or "")
+
+
+def strip_colors(text):
+    """
+    Return your text with ANSI graphics codes removed.
+
+    Raise TypeError if text is not a string.
+    """
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
+    return _sgr_re.sub("", text)
 
 
 def make_style(opts=(), **kwargs):
