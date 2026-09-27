@@ -397,6 +397,40 @@ class PaginationTests(SimpleTestCase):
         with self.assertRaises(EmptyPage):
             await self.check_indexes_async(([], 4, 2, False), 1, None)
 
+    def test_is_first_and_last_page(self):
+        paginator = Paginator([1, 2, 3], 1)
+        for number, is_first, is_last in [
+            (1, True, False),
+            (2, False, False),
+            (3, False, True),
+        ]:
+            with self.subTest(number=number):
+                page = paginator.page(number)
+                self.assertIs(page.is_first_page(), is_first)
+                self.assertIs(page.is_last_page(), is_last)
+
+    async def test_is_first_and_last_page_async(self):
+        paginator = AsyncPaginator([1, 2, 3], 1)
+        for number, is_first, is_last in [
+            (1, True, False),
+            (2, False, False),
+            (3, False, True),
+        ]:
+            with self.subTest(number=number):
+                page = await paginator.apage(number)
+                self.assertIs(await page.ais_first_page(), is_first)
+                self.assertIs(await page.ais_last_page(), is_last)
+
+    def test_single_page_is_first_and_last(self):
+        page = Paginator([1], 1).page(1)
+        self.assertTrue(page.is_first_page())
+        self.assertTrue(page.is_last_page())
+
+    async def test_single_page_is_first_and_last_async(self):
+        page = await AsyncPaginator([1], 1).apage(1)
+        self.assertTrue(await page.ais_first_page())
+        self.assertTrue(await page.ais_last_page())
+
     def test_page_sequence(self):
         """
         A paginator page acts like a standard sequence.
