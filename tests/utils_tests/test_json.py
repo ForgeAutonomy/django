@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.test import SimpleTestCase
-from django.utils.json import normalize_json
+from django.utils.json import is_json_compatible, normalize_json
 
 
 class JSONNormalizeTestCase(SimpleTestCase):
@@ -44,3 +44,15 @@ class JSONNormalizeTestCase(SimpleTestCase):
                 self.assertRaisesMessage(TypeError, "Unsupported type"),
             ):
                 normalize_json(test_case)
+
+
+class IsJSONCompatibleTestCase(SimpleTestCase):
+    def test_compatible_values(self):
+        for test_case in [{"a": [1, 2.5, "x", True, None]}, b"bytes", {1: 2}]:
+            with self.subTest(test_case):
+                self.assertIs(is_json_compatible(test_case), True)
+
+    def test_incompatible_values(self):
+        for test_case in [b"\xff", object(), {"a": object()}]:
+            with self.subTest(test_case):
+                self.assertIs(is_json_compatible(test_case), False)

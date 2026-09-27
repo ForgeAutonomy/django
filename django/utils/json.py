@@ -17,3 +17,12 @@ def normalize_json(obj):
             return [normalize_json(v) for v in obj]
         case _:  # Other types can't be serialized to JSON
             raise TypeError(f"Unsupported type: {type(obj)}")
+
+
+def is_json_compatible(obj):
+    """Return whether an object can be normalized into JSON-compatible types."""
+    try:
+        normalize_json(obj)
+    except (TypeError, ValueError):
+        return False
+    return True
