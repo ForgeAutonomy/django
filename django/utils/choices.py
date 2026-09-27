@@ -7,6 +7,7 @@ __all__ = [
     "BaseChoiceIterator",
     "BlankChoiceIterator",
     "CallableChoiceIterator",
+    "choice_values",
     "flatten_choices",
     "normalize_choices",
 ]
@@ -58,6 +59,11 @@ class CallableChoiceIterator(BaseChoiceIterator):
 
     def __iter__(self):
         yield from normalize_choices(self.func())
+
+
+def choice_values(choices):
+    """Return a list of values from flattened choices."""
+    return [value for value, _ in flatten_choices(choices)]
 
 
 def flatten_choices(choices):
