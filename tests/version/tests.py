@@ -7,6 +7,7 @@ import django
 import django.utils.version
 from django import get_version
 from django.test import SimpleTestCase
+from django.test.utils import ignore_warnings
 from django.utils.deprecation import RemovedInDjango2028Warning
 from django.utils.version import (
     VersionTuple,
@@ -15,6 +16,7 @@ from django.utils.version import (
     get_git_changeset,
     get_main_version,
     get_version_tuple,
+    is_prerelease,
 )
 
 
@@ -102,6 +104,24 @@ class VersionTests(SimpleTestCase):
         for ver_tuple, expected in cases:
             with self.subTest(version=ver_tuple):
                 self.assertEqual(get_docs_version(ver_tuple), expected)
+
+    def test_is_prerelease(self):
+        cases = [
+            ((5, 2, 0, "alpha", 1), True),
+            ((5, 2, 0, "beta", 1), True),
+            ((5, 2, 0, "rc", 1), True),
+            ((5, 2, 0, "final", 0), False),
+            ((5, 2, 3, "final", 0), False),
+            ((2028, 0, "alpha", 1), True),
+        ]
+        for ver_tuple, expected in cases:
+            with self.subTest(version=ver_tuple):
+                self.assertIs(is_prerelease(ver_tuple), expected)
+
+    def test_is_prerelease_default(self):
+        with ignore_warnings(category=RemovedInDjango2028Warning):
+            expected = django.VERSION[-2] != "final"
+        self.assertIs(is_prerelease(), expected)
 
     def test_get_version_tuple(self):
         self.assertEqual(get_version_tuple("1.2.3"), (1, 2, 3))

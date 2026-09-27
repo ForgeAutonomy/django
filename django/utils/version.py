@@ -210,6 +210,12 @@ def get_complete_version(version=None):
     return version
 
 
+def is_prerelease(version=None):
+    """Return whether the version is a prerelease."""
+    version = get_complete_version(version)
+    return version[-2] != "final"
+
+
 def get_docs_version(version=None):
     version = get_complete_version(version)
     if version[-2] != "final":
