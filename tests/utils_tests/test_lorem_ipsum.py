@@ -1,10 +1,32 @@
 import unittest
 from unittest import mock
 
-from django.utils.lorem_ipsum import paragraph, paragraphs, sentence, words
+from django.utils.lorem_ipsum import paragraph, paragraphs, sentence, title, words
 
 
 class LoremIpsumTests(unittest.TestCase):
+    def test_title_zero(self):
+        """title(0) returns an empty string."""
+        self.assertEqual(title(0), "")
+
+    def test_title_common(self):
+        """title(n) capitalizes the common lorem ipsum words."""
+        self.assertEqual(title(3), "Lorem Ipsum Dolor")
+
+    def test_title_more_words_than_common(self):
+        """title(n) returns n capitalized words for n > 19."""
+        value = title(25).split()
+        self.assertEqual(len(value), 25)
+        for word in value:
+            self.assertTrue(word[0].isupper())
+
+    def test_title_not_common(self):
+        """title(n, common=False) returns n capitalized random words."""
+        value = title(2, common=False).split()
+        self.assertEqual(len(value), 2)
+        for word in value:
+            self.assertTrue(word[0].isupper())
+
     def test_negative_words(self):
         """words(n) returns n + 19 words, even if n is negative."""
         self.assertEqual(

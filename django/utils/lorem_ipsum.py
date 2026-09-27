@@ -284,3 +284,13 @@ def words(count, common=True):
     else:
         word_list = word_list[:count]
     return " ".join(word_list)
+
+
+def title(count, common=True):
+    """
+    Return a string of `count` lorem ipsum words with each first letter uppercase.
+
+    If `common` is True, then the first 19 words will be the standard
+    'lorem ipsum' words. Otherwise, all words will be selected randomly.
+    """
+    return " ".join(w[:1].upper() + w[1:] for w in words(count, common=common).split())
