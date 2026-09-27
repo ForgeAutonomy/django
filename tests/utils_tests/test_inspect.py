@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from django.shortcuts import aget_object_or_404
 from django.utils import inspect
+from django.utils.inspect import func_required_args
 from django.utils.version import PY314
 
 if TYPE_CHECKING:
@@ -32,6 +33,27 @@ class Person:
 
 
 class TestInspectMethods(unittest.TestCase):
+    def test_func_required_args(self):
+        def f(a, b=1, *args, c, d=2, **kwargs):
+            pass
+
+        self.assertEqual(func_required_args(f), ["a", "c"])
+
+    def test_func_required_args_no_parameters(self):
+        def f():
+            pass
+
+        self.assertEqual(func_required_args(f), [])
+
+    def test_func_required_args_bound_method(self):
+        self.assertEqual(func_required_args(Person().one_argument), ["something"])
+
+    def test_func_required_args_variadic_parameters(self):
+        def f(*args, **kwargs):
+            pass
+
+        self.assertEqual(func_required_args(f), [])
+
     def test_get_callable_parameters(self):
         self.assertIs(
             inspect._get_callable_parameters(Person.no_arguments),

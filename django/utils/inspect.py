@@ -87,6 +87,15 @@ def func_accepts_var_args(func):
     return any(p for p in _get_callable_parameters(func) if p.kind == p.VAR_POSITIONAL)
 
 
+def func_required_args(func):
+    """Return the names of required positional-or-keyword and keyword-only arguments."""
+    return [
+        param.name
+        for param in _get_callable_parameters(func)
+        if param.kind in KEYWORD_ARG_KINDS and param.default is inspect.Parameter.empty
+    ]
+
+
 def method_has_no_args(meth):
     """Return True if a method only accepts 'self'."""
     count = len([p for p in _get_callable_parameters(meth) if p.kind in ARG_KINDS])
