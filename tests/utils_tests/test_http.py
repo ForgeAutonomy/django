@@ -20,6 +20,7 @@ from django.utils.http import (
     quote_etag,
     split_directive_names,
     split_header_value,
+    strip_fragment,
     url_has_allowed_host_and_scheme,
     urlencode,
     urlsafe_base64_decode,
@@ -104,6 +105,23 @@ class URLEncodeTests(SimpleTestCase):
 
         with self.assertRaisesMessage(TypeError, self.cannot_encode_none_msg):
             urlencode({"a": gen()}, doseq=True)
+
+
+class StripFragmentTests(SimpleTestCase):
+    def test_strip_fragment(self):
+        tests = (
+            ("https://example.com/a?b=1#top", "https://example.com/a?b=1"),
+            ("https://example.com/a#", "https://example.com/a"),
+            ("/path#x", "/path"),
+            ("https://example.com/a?b=1", "https://example.com/a?b=1"),
+        )
+        for url, expected in tests:
+            with self.subTest(url=url):
+                self.assertEqual(strip_fragment(url), expected)
+
+    def test_bytes(self):
+        with self.assertRaises(TypeError):
+            strip_fragment(b"https://example.com/a#top")
 
 
 class Base36IntTests(SimpleTestCase):
