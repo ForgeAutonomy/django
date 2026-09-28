@@ -3,6 +3,7 @@ import sys
 import time
 import unittest
 
+from django.core.exceptions import SuspiciousFileOperation
 from django.core.files.base import ContentFile
 from django.core.files.storage import InMemoryStorage
 from django.core.files.uploadedfile import TemporaryUploadedFile
@@ -288,3 +289,46 @@ class InMemoryStorageTests(SimpleTestCase):
                 defaults_storage.directory_permissions_mode,
                 settings["FILE_UPLOAD_DIRECTORY_PERMISSIONS"],
             )
+
+
+class MemoryStorageMoveTests(unittest.TestCase):
+    def setUp(self):
+        self.storage = InMemoryStorage()
+
+    def test_move_creates_destination_directory(self):
+        self.storage.save("a.txt", ContentFile(b"source content"))
+        self.assertFalse(self.storage.exists("sub"))
+
+        self.storage.move("a.txt", "sub/b.txt")
+
+        self.assertFalse(self.storage.exists("a.txt"))
+        self.assertTrue(self.storage.exists("sub/b.txt"))
+        self.assertEqual(self.storage.open("sub/b.txt").read(), b"source content")
+
+    def test_move_existing_destination(self):
+        self.storage.save("a.txt", ContentFile(b"source content"))
+        self.storage.save("b.txt", ContentFile(b"destination content"))
+
+        with self.assertRaises(FileExistsError):
+            self.storage.move("a.txt", "b.txt", allow_overwrite=False)
+
+        self.assertEqual(self.storage.open("b.txt").read(), b"destination content")
+
+    def test_move_overwrites_existing_destination(self):
+        self.storage.save("a.txt", ContentFile(b"source content"))
+        self.storage.save("b.txt", ContentFile(b"destination content"))
+
+        self.storage.move("a.txt", "b.txt", allow_overwrite=True)
+
+        self.assertEqual(self.storage.open("b.txt").read(), b"source content")
+        self.assertFalse(self.storage.exists("a.txt"))
+
+    def test_move_missing_source(self):
+        with self.assertRaises(FileNotFoundError):
+            self.storage.move("missing.txt", "b.txt")
+
+    def test_move_outside_storage(self):
+        self.storage.save("a.txt", ContentFile(b"source content"))
+
+        with self.assertRaises(SuspiciousFileOperation):
+            self.storage.move("a.txt", "../escape.txt")
