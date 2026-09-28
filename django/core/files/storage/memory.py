@@ -11,6 +11,7 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.files.utils import validate_file_name
 from django.core.signals import setting_changed
 from django.utils._os import safe_join
 from django.utils.deconstruct import deconstructible
@@ -264,6 +265,25 @@ class InMemoryStorage(Storage, StorageSettingsMixin):
 
     def exists(self, name):
         return self._resolve(name, check_exists=False) is not None
+
+    def move(self, old_name, new_name, allow_overwrite=False):
+        """Move a file node without changing its content or metadata."""
+        validate_file_name(new_name, allow_relative_path=True)
+        old_path = self._relative_path(old_name)
+        new_path = self._relative_path(new_name)
+        file_node = self._resolve(old_path, leaf_cls=InMemoryFileNode)
+        if self._resolve(new_path, check_exists=False) is not None:
+            if not allow_overwrite:
+                raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), new_name)
+
+        old_dir, old_filename = os.path.split(old_path)
+        new_dir, new_filename = os.path.split(new_path)
+        old_parent = self._resolve(old_dir, leaf_cls=InMemoryDirNode)
+        new_parent = self._resolve(
+            new_dir, create_if_missing=True, leaf_cls=InMemoryDirNode
+        )
+        old_parent.remove_child(old_filename)
+        new_parent._children[new_filename] = file_node
 
     def listdir(self, path):
         node = self._resolve(path, leaf_cls=InMemoryDirNode)
