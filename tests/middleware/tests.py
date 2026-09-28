@@ -1058,6 +1058,26 @@ class GZipMiddlewareTest(SimpleTestCase):
         self.assertEqual(r.content, self.short_string)
         self.assertIsNone(r.get("Content-Encoding"))
 
+    def test_compress_short_response_with_zero_min_length(self):
+        class ShortResponseGZipMiddleware(GZipMiddleware):
+            min_length = 0
+            max_random_bytes = 0
+
+        short_content = self.compressible_string[: len(self.short_string)]
+        self.resp.content = short_content
+        r = ShortResponseGZipMiddleware(self.get_response)(self.req)
+        self.assertEqual(r.get("Content-Encoding"), "gzip")
+        self.assertEqual(self.decompress(r.content), short_content)
+
+    def test_no_compress_response_below_custom_min_length(self):
+        class LongResponseGZipMiddleware(GZipMiddleware):
+            min_length = 1000
+
+        self.resp.content = self.compressible_string
+        r = LongResponseGZipMiddleware(self.get_response)(self.req)
+        self.assertIsNone(r.get("Content-Encoding"))
+        self.assertEqual(r.content, self.compressible_string)
+
     def test_no_compress_compressed_response(self):
         """
         Compression isn't performed on responses that are already compressed.

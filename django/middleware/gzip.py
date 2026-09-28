@@ -14,10 +14,11 @@ class GZipMiddleware(MiddlewareMixin):
     """
 
     max_random_bytes = 100
+    min_length = 200
 
     def process_response(self, request, response):
         # It's not worth attempting to compress really short responses.
-        if not response.streaming and len(response.content) < 200:
+        if not response.streaming and len(response.content) < self.min_length:
             return response
 
         # Avoid gzipping if we've already got a content-encoding.
