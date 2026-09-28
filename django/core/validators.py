@@ -2,6 +2,7 @@ import ipaddress
 import math
 import re
 import warnings
+from operator import attrgetter
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -19,8 +20,39 @@ from django.utils.warnings import django_file_prefixes
 EMPTY_VALUES = (None, "", [], (), {})
 
 
+class _ValidatorEqualityMixin:
+    _eq_foreign = False
+
+    @property
+    def _eq_type(self):
+        return self.__class__
+
+    def __eq__(self, other):
+        if not isinstance(other, self._eq_type):
+            return self._eq_foreign
+        # Preserve the short-circuiting and return values of chained "and".
+        result = True
+        for getter in self._eq_getters:
+            if not result:
+                return result
+            result = getter(self) == getter(other)
+        return result
+
+
 @deconstructible
-class RegexValidator:
+class RegexValidator(_ValidatorEqualityMixin):
+    _eq_getters = (
+        attrgetter("regex.pattern"),
+        attrgetter("regex.flags"),
+        attrgetter("message"),
+        attrgetter("code"),
+        attrgetter("inverse_match"),
+    )
+
+    @property
+    def _eq_type(self):
+        return RegexValidator
+
     regex = ""
     message = _("Enter a valid value.")
     code = "invalid"
@@ -56,16 +88,6 @@ class RegexValidator:
         invalid_input = regex_matches if self.inverse_match else not regex_matches
         if invalid_input:
             raise ValidationError(self.message, code=self.code, params={"value": value})
-
-    def __eq__(self, other):
-        return (
-            isinstance(other, RegexValidator)
-            and self.regex.pattern == other.regex.pattern
-            and self.regex.flags == other.regex.flags
-            and (self.message == other.message)
-            and (self.code == other.code)
-            and (self.inverse_match == other.inverse_match)
-        )
 
 
 @deconstructible
@@ -210,7 +232,17 @@ def validate_integer(value):
 
 
 @deconstructible
-class EmailValidator:
+class EmailValidator(_ValidatorEqualityMixin):
+    _eq_getters = (
+        lambda validator: set(validator.domain_allowlist),
+        attrgetter("message"),
+        attrgetter("code"),
+    )
+
+    @property
+    def _eq_type(self):
+        return EmailValidator
+
     message = _("Enter a valid email address.")
     code = "invalid"
     hostname_re = DomainNameValidator.hostname_re
@@ -348,14 +380,6 @@ class EmailValidator:
                 pass
         return False
 
-    def __eq__(self, other):
-        return (
-            isinstance(other, EmailValidator)
-            and (set(self.domain_allowlist) == set(other.domain_allowlist))
-            and (self.message == other.message)
-            and (self.code == other.code)
-        )
-
 
 validate_email = EmailValidator()
 
@@ -454,7 +478,14 @@ validate_comma_separated_integer_list = int_list_validator(
 
 
 @deconstructible
-class BaseValidator:
+class BaseValidator(_ValidatorEqualityMixin):
+    _eq_foreign = NotImplemented
+    _eq_getters = (
+        attrgetter("limit_value"),
+        attrgetter("message"),
+        attrgetter("code"),
+    )
+
     message = _("Ensure this value is %(limit_value)s (it is %(show_value)s).")
     code = "limit_value"
 
@@ -471,15 +502,6 @@ class BaseValidator:
         params = {"limit_value": limit_value, "show_value": cleaned, "value": value}
         if self.compare(cleaned, limit_value):
             raise ValidationError(self.message, code=self.code, params=params)
-
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-        return (
-            self.limit_value == other.limit_value
-            and self.message == other.message
-            and self.code == other.code
-        )
 
     def compare(self, a, b):
         return a is not b
@@ -581,11 +603,13 @@ class MaxLengthValidator(BaseValidator):
 
 
 @deconstructible
-class DecimalValidator:
+class DecimalValidator(_ValidatorEqualityMixin):
     """
     Validate that the input does not exceed the maximum number of digits
     expected, otherwise raise ValidationError.
     """
+
+    _eq_getters = (attrgetter("max_digits"), attrgetter("decimal_places"))
 
     messages = {
         "invalid": _("Enter a number."),
@@ -660,16 +684,15 @@ class DecimalValidator:
                 params={"max": (self.max_digits - self.decimal_places), "value": value},
             )
 
-    def __eq__(self, other):
-        return (
-            isinstance(other, self.__class__)
-            and self.max_digits == other.max_digits
-            and self.decimal_places == other.decimal_places
-        )
-
 
 @deconstructible
-class FileExtensionValidator:
+class FileExtensionValidator(_ValidatorEqualityMixin):
+    _eq_getters = (
+        lambda validator: set(validator.allowed_extensions or []),
+        attrgetter("message"),
+        attrgetter("code"),
+    )
+
     message = _(
         "File extension “%(extension)s” is not allowed. "
         "Allowed extensions are: %(allowed_extensions)s."
@@ -703,15 +726,6 @@ class FileExtensionValidator:
                 },
             )
 
-    def __eq__(self, other):
-        return (
-            isinstance(other, self.__class__)
-            and set(self.allowed_extensions or [])
-            == set(other.allowed_extensions or [])
-            and self.message == other.message
-            and self.code == other.code
-        )
-
 
 def get_available_image_extensions():
     try:
@@ -730,8 +744,10 @@ def validate_image_file_extension(value):
 
 
 @deconstructible
-class ProhibitNullCharactersValidator:
+class ProhibitNullCharactersValidator(_ValidatorEqualityMixin):
     """Validate that the string doesn't contain the null character."""
+
+    _eq_getters = (attrgetter("message"), attrgetter("code"))
 
     message = _("Null characters are not allowed.")
     code = "null_characters_not_allowed"
@@ -745,10 +761,3 @@ class ProhibitNullCharactersValidator:
     def __call__(self, value):
         if "\x00" in str(value):
             raise ValidationError(self.message, code=self.code, params={"value": value})
-
-    def __eq__(self, other):
-        return (
-            isinstance(other, self.__class__)
-            and self.message == other.message
-            and self.code == other.code
-        )
