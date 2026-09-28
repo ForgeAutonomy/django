@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from django.conf import settings
 from django.core.files import File, locks
 from django.core.files.move import file_move_safe
+from django.core.files.utils import validate_file_name
 from django.core.signals import setting_changed
 from django.utils._os import safe_join, safe_makedirs
 from django.utils.deconstruct import deconstructible
@@ -152,6 +153,24 @@ class FileSystemStorage(Storage, StorageSettingsMixin):
                     os.chown(full_path, uid=-1, gid=location_gid)
                 except PermissionError:
                     pass
+
+    def move(self, old_name, new_name, allow_overwrite=False):
+        """Move a file to a new name within this storage."""
+        old_path = self.path(old_name)
+        new_path = self.path(new_name)
+        validate_file_name(new_name, allow_relative_path=True)
+
+        # Create any intermediate directories that do not exist.
+        directory = os.path.dirname(new_path)
+        try:
+            if self.directory_permissions_mode is not None:
+                safe_makedirs(directory, self.directory_permissions_mode, exist_ok=True)
+            else:
+                os.makedirs(directory, exist_ok=True)
+        except FileExistsError:
+            raise FileExistsError("%s exists and is not a directory." % directory)
+
+        file_move_safe(old_path, new_path, allow_overwrite=allow_overwrite)
 
     def delete(self, name):
         if not name:
