@@ -182,12 +182,26 @@ class TestSigner(SimpleTestCase):
     def test_invalid_sep(self):
         """should warn on invalid separator"""
         msg = (
-            "Unsafe Signer separator: %r (cannot be empty or consist of only A-z0-9-_=)"
+            "Unsafe Signer separator: %r (cannot be empty or consist of "
+            "only A-Z, a-z, 0-9, '-', '_', '=')"
         )
         separators = ["", "-", "abc"]
         for sep in separators:
             with self.assertRaisesMessage(ValueError, msg % sep):
                 signing.Signer(sep=sep)
+
+    def test_safe_ascii_punctuation_sep(self):
+        for sep in ("^", "[", "]", "\\", "`"):
+            with self.subTest(sep=sep):
+                signer = signing.Signer(key="predictable-secret", sep=sep)
+                value = "hello%sworld" % sep
+                self.assertEqual(signer.unsign(signer.sign(value)), value)
+
+    def test_unsafe_base64_sep(self):
+        for sep in ("", "-", "_", "=", "A", "0", "abc"):
+            with self.subTest(sep=sep):
+                with self.assertRaises(ValueError):
+                    signing.Signer(sep=sep)
 
     def test_verify_with_non_default_key(self):
         old_signer = signing.Signer(key="secret")
