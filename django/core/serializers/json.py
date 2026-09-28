@@ -4,6 +4,7 @@ Serialize data to/from JSON
 
 import datetime
 import decimal
+import enum
 import json
 import uuid
 
@@ -83,8 +84,8 @@ class Deserializer(PythonDeserializer):
 
 class DjangoJSONEncoder(json.JSONEncoder):
     """
-    JSONEncoder subclass that knows how to encode date/time, decimal types, and
-    UUIDs.
+    JSONEncoder subclass that knows how to encode date/time, decimal types,
+    UUIDs, and enums.
     """
 
     def default(self, o):
@@ -110,5 +111,7 @@ class DjangoJSONEncoder(json.JSONEncoder):
             return duration_iso_string(o)
         elif isinstance(o, (decimal.Decimal, uuid.UUID, Promise)):
             return str(o)
+        elif isinstance(o, enum.Enum):
+            return o.value
         else:
             return super().default(o)
