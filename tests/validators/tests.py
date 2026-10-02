@@ -1030,6 +1030,70 @@ class TestValidatorEquality(TestCase):
     Validators have valid equality operators (#21638)
     """
 
+    def test_url_equality_with_regex_validator(self):
+        validator = URLValidator()
+        regex_validator = RegexValidator(
+            validator.regex, validator.message, validator.code
+        )
+        self.assertIs(validator == regex_validator, True)
+        self.assertIs(regex_validator == validator, True)
+
+    def test_domain_name_equality_with_regex_validator(self):
+        validator = DomainNameValidator()
+        regex_validator = RegexValidator(
+            validator.regex, validator.message, validator.code
+        )
+        self.assertIs(validator == regex_validator, True)
+        self.assertIs(regex_validator == validator, True)
+
+    def test_max_value_equality_with_min_value_validator(self):
+        self.assertIs(MaxValueValidator(44) == MinValueValidator(44), False)
+
+    def test_max_value_equality_with_any(self):
+        self.assertIs(MaxValueValidator(44) == mock.ANY, True)
+
+    def test_regex_equality_with_any(self):
+        self.assertIs(RegexValidator(r"x") == mock.ANY, False)
+
+    def test_email_equality_with_any(self):
+        self.assertIs(EmailValidator() == mock.ANY, False)
+
+    def test_decimal_equality_with_any(self):
+        self.assertIs(DecimalValidator(3, 1) == mock.ANY, False)
+
+    def test_file_extension_equality_with_any(self):
+        self.assertIs(FileExtensionValidator(["txt"]) == mock.ANY, False)
+
+    def test_prohibit_null_characters_equality_with_any(self):
+        self.assertIs(ProhibitNullCharactersValidator() == mock.ANY, False)
+
+    def test_domain_name_equality_with_any(self):
+        self.assertIs(DomainNameValidator() == mock.ANY, False)
+
+    def test_regex_unhashable(self):
+        with self.assertRaises(TypeError):
+            hash(RegexValidator(r"x"))
+
+    def test_email_unhashable(self):
+        with self.assertRaises(TypeError):
+            hash(EmailValidator())
+
+    def test_base_validator_unhashable(self):
+        with self.assertRaises(TypeError):
+            hash(BaseValidator(44))
+
+    def test_decimal_unhashable(self):
+        with self.assertRaises(TypeError):
+            hash(DecimalValidator(3, 1))
+
+    def test_file_extension_unhashable(self):
+        with self.assertRaises(TypeError):
+            hash(FileExtensionValidator(["txt"]))
+
+    def test_prohibit_null_characters_unhashable(self):
+        with self.assertRaises(TypeError):
+            hash(ProhibitNullCharactersValidator())
+
     def test_regex_equality(self):
         self.assertEqual(
             RegexValidator(r"^(?:[a-z0-9.-]*)://"),
