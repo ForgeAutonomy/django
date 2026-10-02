@@ -171,6 +171,13 @@ The following checks verify your setup for :doc:`/topics/files`:
 
 * **files.E001**: The :setting:`FILE_UPLOAD_TEMP_DIR` setting refers to the
   nonexistent directory ``<path>``.
+* **files.E002**: The :setting:`DATA_UPLOAD_MAX_MEMORY_SIZE`,
+  :setting:`DATA_UPLOAD_MAX_NUMBER_FIELDS`,
+  :setting:`DATA_UPLOAD_MAX_NUMBER_FILES`, and
+  :setting:`FILE_UPLOAD_MAX_MEMORY_SIZE` settings must each be a non-negative
+  integer (booleans are not accepted). ``None`` is permitted for the three
+  ``DATA_UPLOAD_*`` settings to disable the corresponding limit, but is not
+  permitted for :setting:`FILE_UPLOAD_MAX_MEMORY_SIZE`.
 
 Model fields
 ------------
