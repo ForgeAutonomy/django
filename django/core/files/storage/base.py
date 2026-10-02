@@ -165,6 +165,12 @@ class Storage:
             "subclasses of Storage must provide a listdir() method"
         )
 
+    def move(self, old_name, new_name, allow_overwrite=False):
+        """
+        Move the specified file to a new name in the storage system.
+        """
+        raise NotImplementedError("subclasses of Storage must provide a move() method")
+
     def size(self, name):
         """
         Return the total size, in bytes, of the file specified by name.

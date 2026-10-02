@@ -219,6 +219,18 @@ The ``Storage`` class
         storage systems that aren't able to provide such a listing, this will
         raise a ``NotImplementedError`` instead.
 
+    .. method:: move(old_name, new_name, allow_overwrite=False)
+
+        .. versionadded:: 6.2
+
+        Renames or relocates the file stored at ``old_name`` to ``new_name``
+        without reading its content. Any missing intermediate directories in
+        ``new_name`` are created.
+
+        Raises :exc:`FileExistsError` if ``new_name`` already exists unless
+        ``allow_overwrite`` is ``True``. Raises :exc:`FileNotFoundError` if
+        ``old_name`` does not exist.
+
     .. method:: open(name, mode='rb')
 
         Opens the file given by ``name``. Note that although the returned file

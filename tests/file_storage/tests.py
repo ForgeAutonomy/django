@@ -594,6 +594,68 @@ class FileStorageTests(SimpleTestCase):
         self.addCleanup(self.storage.delete, p)
 
 
+class FileSystemStorageMoveTests(SimpleTestCase):
+    storage_class = FileSystemStorage
+    setUp = FileStorageTests.setUp
+
+    def test_move_creates_intermediate_directories(self):
+        content = b"original contents"
+        self.storage.save("a.txt", ContentFile(content))
+        self.assertFalse(self.storage.exists("sub"))
+
+        self.storage.move("a.txt", "sub/b.txt")
+
+        self.assertFalse(self.storage.exists("a.txt"))
+        self.assertTrue(self.storage.exists("sub/b.txt"))
+        with self.storage.open("sub/b.txt") as f:
+            self.assertEqual(f.read(), content)
+
+    def test_move_existing_destination_without_overwrite(self):
+        self.storage.save("a.txt", ContentFile(b"source contents"))
+        self.storage.save("b.txt", ContentFile(b"destination contents"))
+
+        with self.assertRaises(FileExistsError):
+            self.storage.move("a.txt", "b.txt", allow_overwrite=False)
+
+        with self.storage.open("b.txt") as f:
+            self.assertEqual(f.read(), b"destination contents")
+        with self.storage.open("a.txt") as f:
+            self.assertEqual(f.read(), b"source contents")
+
+    def test_move_existing_destination_with_overwrite(self):
+        self.storage.save("a.txt", ContentFile(b"source contents"))
+        self.storage.save("b.txt", ContentFile(b"destination contents"))
+
+        self.storage.move("a.txt", "b.txt", allow_overwrite=True)
+
+        self.assertFalse(self.storage.exists("a.txt"))
+        with self.storage.open("b.txt") as f:
+            self.assertEqual(f.read(), b"source contents")
+
+    def test_move_missing_source(self):
+        with self.assertRaises(FileNotFoundError):
+            self.storage.move("missing.txt", "b.txt")
+
+    def test_move_prevents_directory_traversal(self):
+        self.storage.save("a.txt", ContentFile(b"source contents"))
+
+        with self.assertRaises(SuspiciousFileOperation):
+            self.storage.move("a.txt", "../escape.txt")
+
+        with self.storage.open("a.txt") as f:
+            self.assertEqual(f.read(), b"source contents")
+
+
+class StorageMoveTests(SimpleTestCase):
+    def test_move_not_implemented(self):
+        class Storage(BaseStorage):
+            pass
+
+        msg = "subclasses of Storage must provide a move() method"
+        with self.assertRaisesMessage(NotImplementedError, msg):
+            Storage().move("a.txt", "b.txt")
+
+
 class CustomStorage(FileSystemStorage):
     def get_available_name(self, name, max_length=None):
         """
