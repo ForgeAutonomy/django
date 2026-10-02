@@ -1,5 +1,6 @@
 import datetime
 import decimal
+import enum
 import json
 import re
 
@@ -307,6 +308,44 @@ class JsonSerializerTransactionTestCase(
 
 
 class DjangoJSONEncoderTests(SimpleTestCase):
+    def test_enum(self):
+        class Colour(enum.Enum):
+            RED = "red"
+
+        class Number(enum.Enum):
+            THREE = 3
+
+        class Date(enum.Enum):
+            DAY = datetime.date(2026, 1, 2)
+
+        tests = [
+            (Colour.RED, '"red"'),
+            (Number.THREE, "3"),
+            (Date.DAY, '"2026-01-02"'),
+        ]
+        for value, expected in tests:
+            with self.subTest(value=value):
+                self.assertEqual(json.dumps(value, cls=DjangoJSONEncoder), expected)
+
+    def test_enum_subclasses(self):
+        class Number(enum.IntEnum):
+            THREE = 3
+
+        class Colour(models.TextChoices):
+            RED = "red", "Red"
+
+        class Integer(models.IntegerChoices):
+            THREE = 3, "Three"
+
+        tests = [
+            (Number.THREE, "3"),
+            (Colour.RED, '"red"'),
+            (Integer.THREE, "3"),
+        ]
+        for value, expected in tests:
+            with self.subTest(value=value):
+                self.assertEqual(json.dumps(value, cls=DjangoJSONEncoder), expected)
+
     def test_lazy_string_encoding(self):
         self.assertEqual(
             json.dumps({"lang": gettext_lazy("French")}, cls=DjangoJSONEncoder),

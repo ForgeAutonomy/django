@@ -100,6 +100,12 @@ GZip middleware
         to change the maximum number of random bytes that is included with
         compressed responses.
 
+    .. attribute:: min_length
+
+        Defaults to 200. Responses with content shorter than this many bytes
+        are not compressed. Subclass ``GZipMiddleware`` and override this
+        attribute to change the minimum length.
+
 .. note::
 
     Security researchers revealed that when compression techniques (including
@@ -126,7 +132,8 @@ read or write the response body so that compression happens afterward.
 
 It will NOT compress content if any of the following are true:
 
-* The content body is less than 200 bytes long.
+* The content body is less than :attr:`.min_length` bytes long (200 by
+  default).
 
 * The response has already set the ``Content-Encoding`` header.
 
